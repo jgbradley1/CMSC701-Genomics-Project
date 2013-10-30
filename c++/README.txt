@@ -1,0 +1,1 @@
+All c++ code will go in this directory. Also this file was only created to make git recognize the folder structure.
