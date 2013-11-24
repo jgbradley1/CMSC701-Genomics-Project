@@ -2,7 +2,7 @@
 This is the max edit distance we want to find:
 Return sequences with edit distance LESS THAN OR EQUAL TO the threshhold
 '''
-THRESH = 3
+THRESH = 2
 
 
 '''
@@ -75,33 +75,80 @@ def build_table():
     for i, ref in enumerate(ref_tree):
         for j, query in enumerate(query_tree):
 
-            print ref_idx, query_idx
+
             '''
-            We need to fill out the table starting at ref_idx+1, query_idx+1
             CAREFUL ABOUT THE CHANGE OF INDICES BETWEEN THE TABLE AND REF/QUERY!
             '''
-            for row in range(ref_idx, len(ref)):
-                for col in range(query_idx, len(query)):
+
+            '''
+            We start at the row that's at most THRESH away from the diagonal at column query_idx,
+            which is where we have to start building the table
+            '''
+            start_row = max(0, query_idx - THRESH)
+
+            '''
+            We end at at most the row where the diagonal meets the end of the query + THRESH
+            or at MOST the length of the reference
+            '''
+            end_row = min(len(ref), len(query) + THRESH)
+
+            print "Start row = ", start_row+1
+            print "End row = ", end_row+1
+
+            for row in range(start_row, end_row):
+
+                if row < ref_idx:
+                    start_col = max(query_idx, row - THRESH)
+                else:
+                    start_col = max(0, row - THRESH)
+                end_col = min(len(query), row + THRESH + 1)
+
+                print "\tstartcol = ", start_col+1
+                print "\tendcol = ", end_col+1
+
+                for col in range(start_col, end_col):
+
+                    print '\t\t', row+1, col+1
 
 
                     pen = 0 if ref[row] == query[col] else 1
-                    ed = min(table[row][col+1] + 1, table[row+1][col] + 1, table[row][col] + pen)
 
                     '''
-                    NEED TO FIGURE OUT SOME WAY TO STOP LOOKING WHEN YOU GET ABOVE THE MAX E.D.
+                    If the cell directly above (row, col) has col < ?
                     '''
-                    # Figure this out later
-                    #if ed > THRESH:
-                    #    break
+                    if col > row - 1 + THRESH:
+                        up = THRESH + 1
+                    else:
+                        up = table[row][col+1] + 1
+
+                    '''
+                    If the cell directly to the left of (row, col) has col < ?
+                    '''
+                    if col-1 < row - THRESH:
+                        left = THRESH + 1
+                    else:
+                        left = table[row+1][col] + 1
+
+                    upleft = table[row][col] + pen
+
+                    print '\t\t\t', left, upleft, up
+
+                    ed = min(up, left, upleft)
+
 
                     table[row+1][col+1] = ed
+
 
             '''
             Find the best edit distance:
             '''
             qlen = len(query)
             best = qlen
-            for row in range(ref_idx, len(ref)):
+
+            for row in range(max(qlen-1-THRESH, 0), min(qlen+THRESH, len(ref))):
+
+                print "Looking for the answer in ", row+1, qlen
+
                 ed = table[row+1][qlen]
                 '''
                 We might only need to check here if we can find an alignment with ed < THRESH (not the minimum ed)
@@ -109,7 +156,7 @@ def build_table():
                 if ed < best:
                     best = ed
 
-            if best < THRESH:
+            if best <= THRESH:
                 matches[ref].append(query)
 
             print ref, query
@@ -118,13 +165,16 @@ def build_table():
             print
 
 
-
             '''
             Set indices to where they should be next:
             '''
             if j == num_queries-1:
                 break
             query_idx = query_tree_next[j]
+            '''
+            For a given reference, we can say we've seen the reference up to the end for all queries:
+            '''
+            ref_idx = len(ref)
 
         '''
         I DON'T THINK THAT THIS IS WORKING --- CHECK MORE CAREFULLY!
@@ -132,7 +182,7 @@ def build_table():
         if i == num_refs-1:
             break
         ref_idx = ref_tree_next[i]
-        ref_idx = 0 # <----------------------- Setting it to 0 for now!
+        query_idx = 0
 
 
 
@@ -140,6 +190,9 @@ def build_table():
 Build the table:
 '''
 build_table()
+
+print "All queries:"
+print query_tree
 
 for ref in matches:
     queries = matches[ref]
