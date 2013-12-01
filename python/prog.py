@@ -4,29 +4,39 @@ import argparse
 parser = argparse.ArgumentParser(description='Finds all query reads that match a reference read set.');
 
 # add the edit distance argument to the command line
-parser.add_argument("-k",
+parser.add_argument('-k',
 					type=int,
 					default=2,
 					required=True,
-                    help="edit distance");
+                    help='edit distance');
 
-# add the input filename argument to the command line
-parser.add_argument("-i",
+# add the reference filename argument to the command line
+parser.add_argument('-r',
 					required=False,	# will change this later when program is complete
-                    help="input filename");
+					default='ref.fna',
+                    help='reference filename');
+
+# add the query filename argument to the command line
+parser.add_argument('-q',
+					required=False,	# will change this later when program is complete
+					default='query.fna',
+                    help='query filename');
 
 # add the output filename argument to the command line
-parser.add_argument("-o",
+parser.add_argument('-o',
 					required=False, # will change this later when program is complete
-                    help="output filename");
+					default='output',
+                    help='output filename');
 
 
 # parse out all the arguments
 args = parser.parse_args();
 
-# print out program information for debugging purposes
-if args.i:
-	print 'Input File: ' + args.i;
+# For now, print out program information for debugging purposes
+if args.r:
+	print 'Reference File: ' + args.r;
+if args.q:
+	print 'Query File: ' + args.q
 if args.o:
 	print 'Output File: ' + args.o
 print 'Edit Distance: ' + str(args.k);
