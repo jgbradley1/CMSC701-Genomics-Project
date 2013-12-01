@@ -39,10 +39,17 @@ query_file_name = args.q;
 output_file_name = args.o;
 
 # For now, print out program information for debugging purposes
-print 'Reference File: ' + ref_file_name;
-print 'Query File: \t' + query_file_name;
-print 'Output File: \t' + output_file_name;
-print 'Edit Distance: \t' + str(args.k);
+print 'Reference File: ' + ref_file_name
+print 'Query File: \t' + query_file_name
+print 'Output File: \t' + output_file_name
+print 'Edit Distance: \t' + str(args.k)
+print '\n'
+
+
+
+
+
+
 
 
 
@@ -70,19 +77,21 @@ query_tree = sort.sort_file(query_file_name);
 '''
 Assuming the reference and query are already in sorted order:
 '''
-ref_tree = ["aaaaaa", "aabbbb", "aabbcc", "aabbcd", "abbbbb", "bcccdd", "bcdddd"]
-query_tree = ["aaa", "aaaaaa", "aaab", "abbc", "accc", "baaaa", "bccaa", "bcd"]
-#ref_tree = ["abc", "ade"]
-#query_tree = ["aa", "bb"]
+#ref_tree = ["aaaaaa", "aabbbb", "aabbcc", "aabbcd", "abbbbb", "bcccdd", "bcdddd"]
+#query_tree = ["aaa", "aaaaaa", "aaab", "abbc", "accc", "baaaa", "bccaa", "bcd"]
 
+#ref_tree = ['abc', 'ade']
+#query_tree = ['aa', 'acd', 'bb']
+
+ref_tree = ['abc', 'abde', 'bcde']
+query_tree = ['aabcd', 'abbcd', 'abcde', 'bbcde', 'bcdef']
 
 
 '''
 Initialize the table:
 Right now, use a numpy array, and assume we have the length of the longest sequence in ref/query
 '''
-
-max_length = 6
+max_length = 5
 table = np.zeros((max_length+1, max_length+1))
 for i in range(len(table)):
     table[i][0] = i
@@ -124,17 +133,16 @@ Temporary variable to keep track of the matches being found:
 '''
 matches = {x:[] for x in ref_tree}
 
-
 '''
 Build the table (from the beginning):
 '''
 def build_table():
     ref_idx = 0
     query_idx = 0
+    
     for i, ref in enumerate(ref_tree):
         for j, query in enumerate(query_tree):
-
-
+        	
             '''
             CAREFUL ABOUT THE CHANGE OF INDICES BETWEEN THE TABLE AND REF/QUERY!
             '''
@@ -250,8 +258,10 @@ Build the table:
 '''
 build_table()
 
-print "All queries:"
-print query_tree
+print 'All References:\t' + str(ref_tree)
+print 'All Queries: \t' + str(query_tree)
+print '\n'
+
 
 for ref in matches:
     queries = matches[ref]
