@@ -1,0 +1,10 @@
+# This is just used to check and make sure the sample query file is working and sorting words correctly
+
+aaa
+aaaaaa
+aaab
+abbc
+accc
+baaaa
+bccaa
+bcd

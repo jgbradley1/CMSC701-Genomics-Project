@@ -1,0 +1,9 @@
+# This is just used to check and make sure the sample reference file is working and sorting words correctly
+
+aaaaaa
+aabbbb
+aabbcc
+aabbcd
+abbbbb
+bcccdd
+bcdddd

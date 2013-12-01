@@ -1,4 +1,6 @@
-import argparse
+import argparse;
+import radix_sort as sort;
+import numpy as np
 
 #describe what the program will do
 parser = argparse.ArgumentParser(description='Finds all query reads that match a reference read set.');
@@ -32,15 +34,15 @@ parser.add_argument('-o',
 # parse out all the arguments
 args = parser.parse_args();
 
-# For now, print out program information for debugging purposes
-if args.r:
-	print 'Reference File: ' + args.r;
-if args.q:
-	print 'Query File: ' + args.q
-if args.o:
-	print 'Output File: ' + args.o
-print 'Edit Distance: ' + str(args.k);
+ref_file_name = args.r;
+query_file_name = args.q;
+output_file_name = args.o;
 
+# For now, print out program information for debugging purposes
+print 'Reference File: ' + ref_file_name;
+print 'Query File: \t' + query_file_name;
+print 'Output File: \t' + output_file_name;
+print 'Edit Distance: \t' + str(args.k);
 
 
 
@@ -58,11 +60,18 @@ THRESH = args.k
 
 
 '''
+# This code will be used to import and sort the ref and query files once debugging is done - for now, skip
+# this step and use the test cases below
+ref_tree = sort.sort_file(ref_file_name);
+query_tree = sort.sort_file(query_file_name);
+'''
+
+
+'''
 Assuming the reference and query are already in sorted order:
 '''
 ref_tree = ["aaaaaa", "aabbbb", "aabbcc", "aabbcd", "abbbbb", "bcccdd", "bcdddd"]
 query_tree = ["aaa", "aaaaaa", "aaab", "abbc", "accc", "baaaa", "bccaa", "bcd"]
-
 #ref_tree = ["abc", "ade"]
 #query_tree = ["aa", "bb"]
 
@@ -72,8 +81,6 @@ query_tree = ["aaa", "aaaaaa", "aaab", "abbc", "accc", "baaaa", "bccaa", "bcd"]
 Initialize the table:
 Right now, use a numpy array, and assume we have the length of the longest sequence in ref/query
 '''
-
-import numpy as np
 
 max_length = 6
 table = np.zeros((max_length+1, max_length+1))
@@ -249,5 +256,3 @@ print query_tree
 for ref in matches:
     queries = matches[ref]
     print ref + "-->" + str([q for q in queries])
-
-

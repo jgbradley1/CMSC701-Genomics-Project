@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 MAX_LENGTH = 125;
 
 '''
@@ -33,12 +31,11 @@ def radix_sort(originalList, numWords, offset, maxWordLength, WordList):
 
 
 
-
-def main():
+def sort_file(filename):
 	dataset = [];
 	sortedList = [];
 
-	f = open('../data/sample_data.txt', 'r');
+	f = open(filename, 'r');
 
 	# read in data
 	maxWord = "";
@@ -48,16 +45,7 @@ def main():
 			maxWord = line.strip();
 	f.close();
 	
-	print 'Original Dataset:';
-	for d in dataset:
-		print '\t' + d;
-	
 	# perform radix sort
 	radix_sort(dataset, len(dataset), 0, len(maxWord), sortedList);
 
-	print '\nSorted Dataset:';
-	for line in sortedList:
-		print '\t' + line;
-
-
-main()
+	return sortedList;
