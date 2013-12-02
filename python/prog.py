@@ -1,3 +1,32 @@
+'''
+
+
+
+
+
+
+To-do list:
+
+1.) Document code
+2.) Write up how it works, add figures, and write up how to run it (include assumptions, clearly!)
+3.) Run experiments in running time and display the figures in the writeup
+4.) Run some test cases
+5.) Tune-ups
+6.) Turn it in before midnight
+
+
+
+
+
+
+
+
+
+
+
+'''
+
+
 import argparse;
 import radix_sort as sort;
 import numpy as np
@@ -62,6 +91,7 @@ Import and sort reference and query data:
 ref_tree, ref_ids, max_ref = sort.sort_file(ref_file_name)
 query_tree, query_ids, max_query = sort.sort_file(query_file_name)
 
+
 '''
 Initialize the table:
 CAUTION: INDICES IN THE TABLE ARE ALL +1
@@ -113,44 +143,40 @@ Build the table (from the beginning):
 '''
 def build_table():
 
-    ref_idx = 0
-    query_idx = 0
+	ref_idx = 0
+	query_idx = 0
 
-    for i, ref in enumerate(ref_tree):
+	for i, ref in enumerate(ref_tree):
 
-		# <------------------------------------------------------ REMOVE THIS REMOVE THIS REMOVE THIS!!! !! ! !! !!!
-    	if i > 3:
-    		break
+		ref_id = ref_ids[i]
 
-    	ref_id = ref_ids[i]
+		for j, query in enumerate(query_tree):
 
-        for j, query in enumerate(query_tree):
+			'''
+			CAREFUL ABOUT THE CHANGE OF INDICES BETWEEN THE TABLE AND REF/QUERY!
+			'''
 
-            '''
-            CAREFUL ABOUT THE CHANGE OF INDICES BETWEEN THE TABLE AND REF/QUERY!
-            '''
+			'''
+			We start at the row that's at most THRESH away from the diagonal at column query_idx,
+			which is where we have to start building the table
+			'''
+			start_row = max(0, query_idx - THRESH)
 
-            '''
-            We start at the row that's at most THRESH away from the diagonal at column query_idx,
-            which is where we have to start building the table
-            '''
-            start_row = max(0, query_idx - THRESH)
+			'''
+			We end at at most the row where the diagonal meets the end of the query + THRESH
+			or at MOST the length of the reference
+			'''
+			end_row = min(len(ref), len(query) + THRESH)
 
-            '''
-            We end at at most the row where the diagonal meets the end of the query + THRESH
-            or at MOST the length of the reference
-            '''
-            end_row = min(len(ref), len(query) + THRESH)
+			for row in range(start_row, end_row):
 
-            for row in range(start_row, end_row):
+				if row < ref_idx:
+				    start_col = max(query_idx, row - THRESH)
+				else:
+				    start_col = max(0, row - THRESH)
+				end_col = min(len(query), row + THRESH + 1)
 
-                if row < ref_idx:
-                    start_col = max(query_idx, row - THRESH)
-                else:
-                    start_col = max(0, row - THRESH)
-                end_col = min(len(query), row + THRESH + 1)
-
-                for col in range(start_col, end_col):
+				for col in range(start_col, end_col):
 
 
 					'''
@@ -180,28 +206,28 @@ def build_table():
 					table[row+1][col+1] = ed
 
 
-            '''
-            Find the best edit distance:
-            '''
-            qlen = len(query)
-            rlen = len(ref)
-            best = qlen
+			'''
+			Find the best edit distance:
+			'''
+			qlen = len(query)
+			rlen = len(ref)
+			best = qlen
 
-            matched = False
+			matched = False
 
-            for row in range(max(qlen-1-THRESH, 0), min(qlen+THRESH, rlen)):
-                ed = table[row+1][qlen]
-                if ed < THRESH:
+			for row in range(max(qlen-1-THRESH, 0), min(qlen+THRESH, rlen)):
+			    ed = table[row+1][qlen]
+			    if ed <= THRESH:
 					matches[ref_id].append(query_ids[j])
 					matched = True
 					break
 
-            if not matched:
-	            for col in range(max(rlen-1-THRESH, 0), min(rlen+THRESH, qlen)):
-	            	ed = table[rlen][col+1]
-	            	if ed < THRESH:
-	            		matches[ref_id].append(query_ids[j])
-	            		break
+			if not matched:
+			    for col in range(max(rlen-1-THRESH, 0), min(rlen+THRESH, qlen)):
+			    	ed = table[rlen][col+1]
+			    	if ed <= THRESH:
+			    		matches[ref_id].append(query_ids[j])
+			    		break
 
 			'''
 			Set indices to where they should be next:
@@ -214,13 +240,13 @@ def build_table():
 			'''
 			ref_idx = len(ref)
 
-			'''
-			Set indices for reference to where they should be next:
-			'''
-			if i == num_refs-1:
-				break
-			ref_idx = ref_tree_next[i]
-			query_idx = 0
+		'''
+		Set indices for reference to where they should be next:
+		'''
+		if i == num_refs-1:
+			break
+		ref_idx = ref_tree_next[i]
+		query_idx = 0
 
 
 # TEST RUN: python prog.py -k=1 -r=../testdata/reference.fna -q=../testdata/query.fna
