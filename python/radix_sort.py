@@ -34,7 +34,7 @@ def radix_sort(originalList, numWords, offset, maxWordLength, WordList):
 def sort_file(filename):
 	dataset = []
 	sortedList = []
-	
+
 	f = open(filename, 'r')
 
 	# read in data
@@ -44,7 +44,7 @@ def sort_file(filename):
 		if ( len(line.strip()) > len(maxWord) ):
 			maxWord = line.strip()
 	f.close()
-	
+
 	# perform radix sort
 	radix_sort(dataset, len(dataset), 0, len(maxWord), sortedList)
 

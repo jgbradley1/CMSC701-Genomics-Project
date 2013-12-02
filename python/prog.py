@@ -1,6 +1,5 @@
-import pdb # python debugger
-import argparse
-import radix_sort as sort
+import argparse;
+import radix_sort as sort;
 import numpy as np
 
 #describe what the program will do
@@ -78,11 +77,11 @@ query_tree = sort.sort_file(query_file_name);
 '''
 Assuming the reference and query are already in sorted order:
 '''
-#ref_tree = ["aaaaaa", "aabbbb", "aabbcc", "aabbcd", "abbbbb", "bcccdd", "bcdddd"]
-#query_tree = ["aaa", "aaaaaa", "aaab", "abbc", "accc", "baaaa", "bccaa", "bcd"]
+ref_tree = ["aaaaaa", "aabbbb", "aabbcc", "aabbcd", "abbbbb", "bcccdd", "bcdddd"]
+query_tree = ["aaa", "aaaaaa", "aaab", "abbc", "accc", "baaaa", "bccaa", "bcd"]
 
-ref_tree = ['abc']
-query_tree = ['abbcd']
+#ref_tree = ['abc']
+#query_tree = ['abbcd']
 
 #ref_tree = ['abc', 'abde', 'bcde']
 #query_tree = ['aabcd', 'abbcd', 'abcde', 'bbcde', 'bcdef']
@@ -93,7 +92,7 @@ query_tree = ['abbcd']
 Initialize the table:
 Right now, use a numpy array, and assume we have the length of the longest sequence in ref/query
 '''
-max_length = 5
+max_length = 6
 table = np.zeros((max_length+1, max_length+1))
 for i in range(len(table)):
     table[i][0] = i
@@ -135,18 +134,6 @@ Temporary variable to keep track of the matches being found:
 '''
 matches = {x:[] for x in ref_tree}
 
-
-print 'Reference Next Index'
-for i in range(num_refs-1):
-	print 'Ref: ' + ref_tree[i] + '\tNext Idx: ' + str(ref_tree_next[i])
-print 'Ref: ' + ref_tree[num_refs-1] + '\tNext Idx: none'
-
-print 'Query Next Index'
-for i in range(num_queries-1):
-	print 'Query: ' + query_tree[i] + '\tNext Idx: ' + str(query_tree_next[i])
-print 'Query: ' + query_tree[num_queries-1] + '\tNext Idx: none'
-print '\n'
-
 '''
 Build the table (from the beginning):
 '''
@@ -173,19 +160,8 @@ def build_table():
             '''
             end_row = min(len(ref), len(query) + THRESH)
 
-<<<<<<< HEAD
             #print "Start row = ", start_row+1
             #print "End row = ", end_row+1
-=======
-
-            print 'ref= ' + ref + '\ti= ' + str(i)
-            print 'query= ' + query + '\tj= ' + str(j)
-            print 'start_row= ', start_row
-            print 'end_row= ', end_row
-            print 'Ref Idx= ' + str(ref_idx)
-            print 'Query Idx= ' + str(query_idx)
-            print 'Row Focus=[' + str(start_row) + '-' + str(end_row-1) + ']'
->>>>>>> 0851d4077f40a3802f2612a804a08154c1d65761
 
             for row in range(start_row, end_row):
 
@@ -195,26 +171,18 @@ def build_table():
                     start_col = max(0, row - THRESH)
                 end_col = min(len(query), row + THRESH + 1)
 
-<<<<<<< HEAD
                 #print "\tstartcol = ", start_col+1
                 #print "\tendcol = ", end_col+1
-=======
-                print '    Col Focus=[' + str(start_col) + '-' + str(end_col-1) + ']'
->>>>>>> 0851d4077f40a3802f2612a804a08154c1d65761
 
-
-<<<<<<< HEAD
-                    #print '\t\t', row+1, col+1
-=======
                 for col in range(start_col, end_col):
->>>>>>> 0851d4077f40a3802f2612a804a08154c1d65761
 
-                    print '\t\trow=' + str(row) + ' col=' + str(col)
+                    #print '\t\t', row+1, col+1
+
 
                     pen = 0 if ref[row] == query[col] else 1
 
                     '''
-                    If the cell directly ABOVE (row, col) is outside the main diagonal
+                    If the cell directly above (row, col) has col < ?
                     '''
                     if col > row - 1 + THRESH:
                         up = THRESH + 1
@@ -222,7 +190,7 @@ def build_table():
                         up = table[row][col+1] + 1
 
                     '''
-                    If the cell directly to the LEFT of (row, col) is outside of the main diagonal
+                    If the cell directly to the left of (row, col) has col < ?
                     '''
                     if col-1 < row - THRESH:
                         left = THRESH + 1
@@ -231,48 +199,32 @@ def build_table():
 
                     upleft = table[row][col] + pen
 
-<<<<<<< HEAD
                     #print '\t\t\t', left, upleft, up
-=======
-                    print '\t\t\tL=' + str(left) + ' UL=' + str(upleft) + ' U=' + str(up)
->>>>>>> 0851d4077f40a3802f2612a804a08154c1d65761
 
                     ed = min(up, left, upleft)
-                    print '\t\t\ttable[' + str(row+1) + '][' + str(col+1) + ']=' + str(ed)
+
+
                     table[row+1][col+1] = ed
 
-            print 'test message: ' + str(end_row) + ' ' + str(end_col)
+
             '''
-            Find the best edit distance:
+            Find the best edit distance: - NOTE: change this later to stop after finding a working ED!!!!!!!
             '''
             qlen = len(query)
             rlen = len(ref)
             best = qlen
 
-<<<<<<< HEAD
+            print qlen, rlen
+
             for row in range(max(qlen-1-THRESH, 0), min(qlen+THRESH, rlen)):
-=======
-            print '\nLooking for best ED in col=' + str(qlen) + ' and rows [' + str(max(qlen-1-THRESH, 0)) + '-' + str(min(qlen+THRESH, len(ref))) + ']'
-            for row in range(max(qlen-THRESH, 0), min(qlen+THRESH, len(ref))):
->>>>>>> 0851d4077f40a3802f2612a804a08154c1d65761
-
-                print '  looking at table[' + str(row+1) + '][' + str(qlen) + ']'
-
                 ed = table[row+1][qlen]
-                print '\tsaw ', ed
-                '''
-                We might only need to check here if we can find an alignment with ed < THRESH (not the minimum ed)
-                '''
+                print '\tsaw ', ed, "at", row+1, qlen
                 if ed < best:
                     best = ed
 
-            '''
-            Also need to look in last row:
-            '''
-
-            for col in range(max(rlen-THRESH, 0), min(rlen+THRESH, qlen)):
-            	ed = table[rlen][col]
-            	print '\tsaw', ed
+            for col in range(max(rlen-1-THRESH, 0), min(rlen+THRESH, qlen)):
+            	ed = table[rlen][col+1]
+            	print '\tsaw', ed, "at", rlen, col+1
             	if ed < best:
             		best = ed
 
@@ -281,9 +233,10 @@ def build_table():
             if best <= THRESH:
                 matches[ref].append(query)
 
-            print '\nref: ' + ref + ' \tquery: ' + query + '\tbest ED: ' + str(best)
+            print ref, query
             print table
-            print ''
+            print "BEST = " + str(best)
+            print
 
 
             '''
@@ -295,7 +248,7 @@ def build_table():
             '''
             For a given reference, we can say we've seen the reference up to the end for all queries:
             '''
-            #ref_idx = len(ref)
+            ref_idx = len(ref)
 
         '''
         I DON'T THINK THAT THIS IS WORKING --- CHECK MORE CAREFULLY!
