@@ -15,13 +15,13 @@ parser.add_argument('-k',
 # add the reference filename argument to the command line
 parser.add_argument('-r',
 					required=False,	# will change this later when program is complete
-					default='ref.fna',
+					default='../data/reference.fna',
                     help='reference filename');
 
 # add the query filename argument to the command line
 parser.add_argument('-q',
 					required=False,	# will change this later when program is complete
-					default='query.fna',
+					default='../data/query.fna',
                     help='query filename');
 
 # add the output filename argument to the command line
@@ -47,18 +47,6 @@ print '\n'
 
 
 
-
-
-
-
-
-
-
-'''
-#################################  Start of the actual program code  ##################################
-'''
-
-
 '''
 This is the max edit distance we want to find:
 Return sequences with edit distance LESS THAN OR EQUAL TO the threshhold
@@ -66,42 +54,28 @@ Return sequences with edit distance LESS THAN OR EQUAL TO the threshhold
 THRESH = args.k
 
 
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
-# This code will be used to import and sort the ref and query files once debugging is done - for now, skip
-# this step and use the test cases below
-ref_tree = sort.sort_file(ref_file_name);
-query_tree = sort.sort_file(query_file_name);
+Import and sort reference and query data:
 '''
-
-
-'''
-Assuming the reference and query are already in sorted order:
-'''
-ref_tree = ["aaaaaa", "aabbbb", "aabbcc", "aabbcd", "abbbbb", "bcccdd", "bcdddd"]
-query_tree = ["aaa", "aaaaaa", "aaab", "abbc", "accc", "baaaa", "bccaa", "bcd"]
-
-#ref_tree = ['abc']
-#query_tree = ['abbcd']
-
-#ref_tree = ['abc', 'abde', 'bcde']
-#query_tree = ['aabcd', 'abbcd', 'abcde', 'bbcde', 'bcdef']
-
-
+ref_tree, ref_ids, max_ref = sort.sort_file(ref_file_name)
+query_tree, query_ids, max_query = sort.sort_file(query_file_name)
 
 '''
 Initialize the table:
-Right now, use a numpy array, and assume we have the length of the longest sequence in ref/query
+CAUTION: INDICES IN THE TABLE ARE ALL +1
 '''
-max_length = 6
-table = np.zeros((max_length+1, max_length+1))
+table = np.zeros((max_ref+1, max_query+1))
 for i in range(len(table)):
     table[i][0] = i
-    table[0][i] = i
+for i in range(len(table[0])):
+	table[0][i] = i
 
 
 '''
 Preprocessing:
-Make implicit tree by storing for sequence i the position j in sequence i+1 where a mismatch occurs
+Make implicit tree by storing for each sequence i the position j in sequence i+1 where a mismatch occurs
 '''
 ref_tree_next = {}
 for i in range(len(ref_tree)-1):
@@ -132,16 +106,24 @@ num_queries = len(query_tree)
 '''
 Temporary variable to keep track of the matches being found:
 '''
-matches = {x:[] for x in ref_tree}
+matches = {x:[] for x in ref_ids}
 
 '''
 Build the table (from the beginning):
 '''
 def build_table():
+
     ref_idx = 0
     query_idx = 0
 
     for i, ref in enumerate(ref_tree):
+
+		# <------------------------------------------------------ REMOVE THIS REMOVE THIS REMOVE THIS!!! !! ! !! !!!
+    	if i > 3:
+    		break
+
+    	ref_id = ref_ids[i]
+
         for j, query in enumerate(query_tree):
 
             '''
@@ -160,9 +142,6 @@ def build_table():
             '''
             end_row = min(len(ref), len(query) + THRESH)
 
-            #print "Start row = ", start_row+1
-            #print "End row = ", end_row+1
-
             for row in range(start_row, end_row):
 
                 if row < ref_idx:
@@ -171,93 +150,80 @@ def build_table():
                     start_col = max(0, row - THRESH)
                 end_col = min(len(query), row + THRESH + 1)
 
-                #print "\tstartcol = ", start_col+1
-                #print "\tendcol = ", end_col+1
-
                 for col in range(start_col, end_col):
 
-                    #print '\t\t', row+1, col+1
+
+					'''
+					If the cell directly above (row, col) has col < ?
+					'''
+					if col > row - 1 + THRESH:
+						up = THRESH + 1
+					else:
+						up = table[row][col+1] + 1
+
+					'''
+					If the cell directly to the left of (row, col) has col < ?
+					'''
+					if col-1 < row - THRESH:
+						left = THRESH + 1
+					else:
+						left = table[row+1][col] + 1
 
 
-                    pen = 0 if ref[row] == query[col] else 1
+					'''
+					Take the score in the cell above and to the left plus 1 if there's a mismatch:
+					'''
+					pen = 0 if ref[row] == query[col] else 1
+					upleft = table[row][col] + pen
 
-                    '''
-                    If the cell directly above (row, col) has col < ?
-                    '''
-                    if col > row - 1 + THRESH:
-                        up = THRESH + 1
-                    else:
-                        up = table[row][col+1] + 1
-
-                    '''
-                    If the cell directly to the left of (row, col) has col < ?
-                    '''
-                    if col-1 < row - THRESH:
-                        left = THRESH + 1
-                    else:
-                        left = table[row+1][col] + 1
-
-                    upleft = table[row][col] + pen
-
-                    #print '\t\t\t', left, upleft, up
-
-                    ed = min(up, left, upleft)
-
-
-                    table[row+1][col+1] = ed
+					ed = min(up, left, upleft)
+					table[row+1][col+1] = ed
 
 
             '''
-            Find the best edit distance: - NOTE: change this later to stop after finding a working ED!!!!!!!
+            Find the best edit distance:
             '''
             qlen = len(query)
             rlen = len(ref)
             best = qlen
 
-            print qlen, rlen
+            matched = False
 
             for row in range(max(qlen-1-THRESH, 0), min(qlen+THRESH, rlen)):
                 ed = table[row+1][qlen]
-                print '\tsaw ', ed, "at", row+1, qlen
-                if ed < best:
-                    best = ed
+                if ed < THRESH:
+					matches[ref_id].append(query_ids[j])
+					matched = True
+					break
 
-            for col in range(max(rlen-1-THRESH, 0), min(rlen+THRESH, qlen)):
-            	ed = table[rlen][col+1]
-            	print '\tsaw', ed, "at", rlen, col+1
-            	if ed < best:
-            		best = ed
+            if not matched:
+	            for col in range(max(rlen-1-THRESH, 0), min(rlen+THRESH, qlen)):
+	            	ed = table[rlen][col+1]
+	            	if ed < THRESH:
+	            		matches[ref_id].append(query_ids[j])
+	            		break
+
+			'''
+			Set indices to where they should be next:
+			'''
+			if j == num_queries-1:
+				break
+			query_idx = query_tree_next[j]
+			'''
+			For a given reference, we can say we've seen the reference up to the end for all queries:
+			'''
+			ref_idx = len(ref)
+
+			'''
+			Set indices for reference to where they should be next:
+			'''
+			if i == num_refs-1:
+				break
+			ref_idx = ref_tree_next[i]
+			query_idx = 0
 
 
-
-            if best <= THRESH:
-                matches[ref].append(query)
-
-            print ref, query
-            print table
-            print "BEST = " + str(best)
-            print
-
-
-            '''
-            Set indices to where they should be next:
-            '''
-            if j == num_queries-1:
-                break
-            query_idx = query_tree_next[j]
-            '''
-            For a given reference, we can say we've seen the reference up to the end for all queries:
-            '''
-            ref_idx = len(ref)
-
-        '''
-        I DON'T THINK THAT THIS IS WORKING --- CHECK MORE CAREFULLY!
-        '''
-        if i == num_refs-1:
-            break
-        ref_idx = ref_tree_next[i]
-        query_idx = 0
-
+# TEST RUN: python prog.py -k=1 -r=../testdata/reference.fna -q=../testdata/query.fna
 
 
 '''
@@ -265,11 +231,10 @@ Build the table:
 '''
 build_table()
 
-print 'All References:\t' + str(ref_tree)
-print 'All Queries: \t' + str(query_tree)
-print '\n'
-
-
-for ref in matches:
-    queries = matches[ref]
-    print ref + "-->" + str([q for q in queries])
+outfile = open(output_file_name, 'w')
+for r_id in matches:
+	line = r_id
+	q_ids = matches[r_id]
+	for q_id in q_ids:
+		line += " " + q_id
+	outfile.write(line + '\n')
