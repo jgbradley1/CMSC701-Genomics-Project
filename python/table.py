@@ -1,77 +1,8 @@
-import argparse;
-import radix_sort as sort;
-import numpy as np
-
-#describe what the program will do
-parser = argparse.ArgumentParser(description='Finds all query reads that match a reference read set.');
-
-# add the edit distance argument to the command line
-parser.add_argument('-k',
-					type=int,
-					default=2,
-					required=True,
-                    help='edit distance');
-
-# add the reference filename argument to the command line
-parser.add_argument('-r',
-					required=False,	# will change this later when program is complete
-					default='ref.fna',
-                    help='reference filename');
-
-# add the query filename argument to the command line
-parser.add_argument('-q',
-					required=False,	# will change this later when program is complete
-					default='query.fna',
-                    help='query filename');
-
-# add the output filename argument to the command line
-parser.add_argument('-o',
-					required=False, # will change this later when program is complete
-					default='output',
-                    help='output filename');
-
-
-# parse out all the arguments
-args = parser.parse_args();
-
-ref_file_name = args.r;
-query_file_name = args.q;
-output_file_name = args.o;
-
-# For now, print out program information for debugging purposes
-print 'Reference File: ' + ref_file_name
-print 'Query File: \t' + query_file_name
-print 'Output File: \t' + output_file_name
-print 'Edit Distance: \t' + str(args.k)
-print '\n'
-
-
-
-
-
-
-
-
-
-
-'''
-#################################  Start of the actual program code  ##################################
-'''
-
-
 '''
 This is the max edit distance we want to find:
 Return sequences with edit distance LESS THAN OR EQUAL TO the threshhold
 '''
-THRESH = args.k
-
-
-'''
-# This code will be used to import and sort the ref and query files once debugging is done - for now, skip
-# this step and use the test cases below
-ref_tree = sort.sort_file(ref_file_name);
-query_tree = sort.sort_file(query_file_name);
-'''
+THRESH = 1
 
 
 '''
@@ -80,19 +11,18 @@ Assuming the reference and query are already in sorted order:
 #ref_tree = ["aaaaaa", "aabbbb", "aabbcc", "aabbcd", "abbbbb", "bcccdd", "bcdddd"]
 #query_tree = ["aaa", "aaaaaa", "aaab", "abbc", "accc", "baaaa", "bccaa", "bcd"]
 
-ref_tree = ['abc']
-query_tree = ['abbcd']
-
-#ref_tree = ['abc', 'abde', 'bcde']
-#query_tree = ['aabcd', 'abbcd', 'abcde', 'bbcde', 'bcdef']
-
+ref_tree = ['abc', 'abde', 'bcde']
+query_tree = ['aabcd', 'abbcd', 'abcde', 'bbcde', 'bcdef']
 
 
 '''
 Initialize the table:
 Right now, use a numpy array, and assume we have the length of the longest sequence in ref/query
 '''
-max_length = 5
+
+import numpy as np
+
+max_length = 6
 table = np.zeros((max_length+1, max_length+1))
 for i in range(len(table)):
     table[i][0] = i
@@ -134,15 +64,16 @@ Temporary variable to keep track of the matches being found:
 '''
 matches = {x:[] for x in ref_tree}
 
+
 '''
 Build the table (from the beginning):
 '''
 def build_table():
     ref_idx = 0
     query_idx = 0
-
     for i, ref in enumerate(ref_tree):
         for j, query in enumerate(query_tree):
+
 
             '''
             CAREFUL ABOUT THE CHANGE OF INDICES BETWEEN THE TABLE AND REF/QUERY!
@@ -160,8 +91,8 @@ def build_table():
             '''
             end_row = min(len(ref), len(query) + THRESH)
 
-            #print "Start row = ", start_row+1
-            #print "End row = ", end_row+1
+            print "Start row = ", start_row+1
+            print "End row = ", end_row+1
 
             for row in range(start_row, end_row):
 
@@ -171,12 +102,12 @@ def build_table():
                     start_col = max(0, row - THRESH)
                 end_col = min(len(query), row + THRESH + 1)
 
-                #print "\tstartcol = ", start_col+1
-                #print "\tendcol = ", end_col+1
+                print "\tstartcol = ", start_col+1
+                print "\tendcol = ", end_col+1
 
                 for col in range(start_col, end_col):
 
-                    #print '\t\t', row+1, col+1
+                    print '\t\t', row+1, col+1
 
 
                     pen = 0 if ref[row] == query[col] else 1
@@ -199,7 +130,7 @@ def build_table():
 
                     upleft = table[row][col] + pen
 
-                    #print '\t\t\t', left, upleft, up
+                    print '\t\t\t', left, upleft, up
 
                     ed = min(up, left, upleft)
 
@@ -211,32 +142,18 @@ def build_table():
             Find the best edit distance:
             '''
             qlen = len(query)
-            rlen = len(ref)
             best = qlen
 
-            for row in range(max(qlen-1-THRESH, 0), min(qlen+THRESH, rlen)):
+            for row in range(max(qlen-1-THRESH, 0), min(qlen+THRESH, len(ref))):
 
                 print "Looking for the answer in ", row+1, qlen
 
                 ed = table[row+1][qlen]
-                print '\tsaw ', ed
                 '''
                 We might only need to check here if we can find an alignment with ed < THRESH (not the minimum ed)
                 '''
                 if ed < best:
                     best = ed
-
-            '''
-            Also need to look in last row:
-            '''
-
-            for col in range(max(rlen-THRESH, 0), min(rlen+THRESH, qlen)):
-            	ed = table[rlen][col]
-            	print '\tsaw', ed
-            	if ed < best:
-            		best = ed
-
-
 
             if best <= THRESH:
                 matches[ref].append(query)
@@ -273,11 +190,32 @@ Build the table:
 '''
 build_table()
 
-print 'All References:\t' + str(ref_tree)
-print 'All Queries: \t' + str(query_tree)
-print '\n'
-
+print "All queries:"
+print query_tree
 
 for ref in matches:
     queries = matches[ref]
     print ref + "-->" + str([q for q in queries])
+
+
+
+
+
+
+
+'''
+Tree traversal pseudo-code:
+
+search(reference.root, query.root)
+
+search(node ref_node, q_node): // args probably correspond to character positions
+                                // maybe check against next one in list?
+
+    if (red_node and q_node at bottom): // if they're both past the end of the string
+        // fill out table
+        // check for valid ED
+
+    for c in n.children:
+
+
+'''
