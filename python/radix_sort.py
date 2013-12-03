@@ -31,7 +31,7 @@ def radix_sort(originalList, numWords, offset, maxWordLength, WordList):
 
 
 
-def sort_file(filename):
+def sort_file(filename, maxq=-1):
 	dataset = []
 	sortedList = []
 
@@ -39,6 +39,7 @@ def sort_file(filename):
 	max_length = 0 # Keep track of max length sequence for later
 
 	# Read in data:
+	num_read = 0
 	id = "-"
 	while True:
 		if len(id) is 0:
@@ -55,6 +56,12 @@ def sort_file(filename):
 			if slen > max_length:
 				max_length = slen
 			dataset.append((id[1:].strip(), seq))
+
+			num_read += 1
+			if maxq > 0:
+				if num_read >= maxq:
+					break
+
 			id = nxt
 		else:
 			id = f.readline()
