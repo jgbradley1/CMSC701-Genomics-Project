@@ -30,7 +30,12 @@ def radix_sort(originalList, numWords, offset, maxWordLength, WordList):
 
 
 
+'''
+When a file name is passed in, in FASTA format, reads maxq sequences from the file into memory
+and sorts them using a variant of radix sort
 
+if maxq is not passed in, we assume the entire file of sequences will be read into memory and sorted
+'''
 def sort_file(filename, maxq=-1):
 	dataset = []
 	sortedList = []
